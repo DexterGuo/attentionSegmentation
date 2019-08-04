@@ -19,7 +19,7 @@ from choiloader import collate_fn
 from data_loader import SegTextDataSet
 import accuracy
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
