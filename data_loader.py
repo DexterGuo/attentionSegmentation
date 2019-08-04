@@ -77,18 +77,19 @@ def read_seg_file(path, word2vec, remove_preface_segment=True,
         if not sentences: continue
 
         for sentence in sentences:
-            loc, ocr = sentence.split("\t")
+            tokens = sentence.split("\t")
+            if len(tokens) != 2: continue
+            loc, ocr = tokens
             sentence_words = ocr.split(" ")
             if 1 <= len(sentence_words):
-                print len(sentence_words), sentence_words
                 offset, token_num = 0, len(sentence_words)
+                sent_data = []
                 for i, word in enumerate(sentence_words):
                     word_embed = word_model(word, word2vec)
-                    loc_embed = location_model(loc, i, offset, token_num)
-                    data.append([word_embed, loc_embed])
+                    #loc_embed = location_model(loc, i, offset, token_num)
+                    sent_data.append(word_embed)
                     offset += len(word)
-            else:
-                logger.info('Sentence in wikipedia file is empty')
+                data.append(sent_data)
         if data:
             targets.append(len(data) - 1)
 
@@ -117,7 +118,7 @@ class SegTextDataSet(Dataset):
         self.high_granularity = high_granularity
 
     def __getitem__(self, index):
-        path = "../text-segmentation-master/" + self.textfiles[index]
+        path = self.textfiles[index]
 
         return read_seg_file(Path(path), self.word2vec, ignore_list=True, remove_special_tokens=True,
                               high_granularity=self.high_granularity)
@@ -127,7 +128,7 @@ class SegTextDataSet(Dataset):
 
 if __name__ == "__main__":
     import sys
-    root = "../text-segmentation-master/data/math_1.11/test"
+    root = "data/segdata_train_20190730_seg_token/test"
     segtext = SegTextDataSet(root, None)
     print segtext[0][0][0]
 

@@ -19,6 +19,6 @@ def word_model(word, model):
 def location_model(loc, i, offset, token_num):
     print "location", loc, i, offset, token_num
     loc_embed = np.zeros([1, 300])
-    loc_embed[0] = (i+1)*1.0/(token_num+1)
+    loc_embed[0][0] = (i+1)*1.0/(token_num+1)
     return loc_embed
 
