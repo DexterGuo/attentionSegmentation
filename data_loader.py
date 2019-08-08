@@ -65,6 +65,38 @@ def get_sections(path, high_granularity=True):
 
     return sections
 
+def read_seg_test_file(path, word2vec, remove_preface_segment=True, 
+                   ignore_list=False, remove_special_tokens=False,
+                   return_as_sentences=False, high_granularity=True,only_letters = False):
+    data, targets = [], []
+    loc_list, ocr_list = [], []
+    all_sections = get_sections(path, high_granularity)
+
+    for section in all_sections:
+        sentences = section.split('\n')
+        if not sentences: continue
+
+        for sentence in sentences:
+            tokens = sentence.split("\t")
+            if len(tokens) != 2: continue
+            loc, ocr = tokens
+            sentence_words = ocr.split(" ")
+            if 1 <= len(sentence_words):
+                offset, token_num = 0, len(sentence_words)
+                sent_data = []
+                for i, word in enumerate(sentence_words):
+                    word_embed = word_model(word, word2vec)
+                    #loc_embed = location_model(loc, i, offset, token_num)
+                    sent_data.append(word_embed)
+                    offset += len(word)
+                data.append(sent_data)
+                loc_list.append(loc)
+                ocr_list.append(ocr)
+        if data:
+            targets.append(len(data) - 1)
+
+    return data, targets, [path, loc_list, ocr_list]
+
 
 def read_seg_file(path, word2vec, remove_preface_segment=True, 
                    ignore_list=False, remove_special_tokens=False,
@@ -119,9 +151,10 @@ class SegTextDataSet(Dataset):
 
     def __getitem__(self, index):
         path = self.textfiles[index]
-
-        return read_seg_file(Path(path), self.word2vec, ignore_list=True, remove_special_tokens=True,
-                              high_granularity=self.high_granularity)
+        if self.train:
+            return read_seg_file(Path(path), self.word2vec, ignore_list=True, remove_special_tokens=True, high_granularity=self.high_granularity)
+        else:
+            return read_seg_test_file(Path(path), self.word2vec, ignore_list=True, remove_special_tokens=True, high_granularity=self.high_granularity)
 
     def __len__(self):
         return len(self.textfiles)
