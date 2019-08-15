@@ -15,6 +15,10 @@ def get_cache_path(wiki_folder):
     cache_file_path = wiki_folder / 'paths_cache'
     return cache_file_path
 
+def get_cache_path_pred(wiki_folder):
+    cache_file_path = wiki_folder / 'paths_cache_pred'
+    return cache_file_path
+
 
 def cache_wiki_filenames(wiki_folder):
     files = Path(wiki_folder).glob('*/*/*/*')
@@ -67,7 +71,8 @@ def get_sections(path, high_granularity=True):
 
 def read_seg_test_file(path, word2vec, remove_preface_segment=True, 
                    ignore_list=False, remove_special_tokens=False,
-                   return_as_sentences=False, high_granularity=True,only_letters = False):
+                   return_as_sentences=False, high_granularity=True,
+                   only_letters = False, max_token_num=0):
     data, targets = [], []
     loc_list, ocr_list = [], []
     all_sections = get_sections(path, high_granularity)
@@ -89,6 +94,7 @@ def read_seg_test_file(path, word2vec, remove_preface_segment=True,
                     #loc_embed = location_model(loc, i, offset, token_num)
                     sent_data.append(word_embed)
                     offset += len(word)
+                if max_token_num>0 : sent_data = sent_data[:max_token_num]
                 data.append(sent_data)
                 loc_list.append(loc)
                 ocr_list.append(ocr)
@@ -100,7 +106,8 @@ def read_seg_test_file(path, word2vec, remove_preface_segment=True,
 
 def read_seg_file(path, word2vec, remove_preface_segment=True, 
                    ignore_list=False, remove_special_tokens=False,
-                   return_as_sentences=False, high_granularity=True,only_letters = False):
+                   return_as_sentences=False, high_granularity=True,
+                   only_letters = False, max_token_num=0):
     data, targets = [], []
     all_sections = get_sections(path, high_granularity)
 
@@ -121,6 +128,7 @@ def read_seg_file(path, word2vec, remove_preface_segment=True,
                     #loc_embed = location_model(loc, i, offset, token_num)
                     sent_data.append(word_embed)
                     offset += len(word)
+                if max_token_num>0 : sent_data = sent_data[:max_token_num]
                 data.append(sent_data)
         if data:
             targets.append(len(data) - 1)
@@ -128,16 +136,22 @@ def read_seg_file(path, word2vec, remove_preface_segment=True,
     return data, targets, path
 
 class SegTextDataSet(Dataset):
-    def __init__(self, root, word2vec, train=True, manifesto=False, folder=False, high_granularity=False):
+    def __init__(self, root, word2vec, train=True, manifesto=False, folder=False, high_granularity=False, max_token_num=0):
 
         if (manifesto):
             self.textfiles = list(Path(root).glob('*'))
         else:
             if (folder):
                 self.textfiles = get_files(root)
-            else:
+            elif train:
                 root_path = Path(root)
                 cache_path = get_cache_path(root_path)
+                if not cache_path.exists():
+                    cache_wiki_filenames(root_path)
+                self.textfiles = cache_path.read_text().splitlines()
+            else:
+                root_path = Path(root)
+                cache_path = get_cache_path_pred(root_path)
                 if not cache_path.exists():
                     cache_wiki_filenames(root_path)
                 self.textfiles = cache_path.read_text().splitlines()
@@ -148,13 +162,14 @@ class SegTextDataSet(Dataset):
         self.root = root
         self.word2vec = word2vec
         self.high_granularity = high_granularity
+        self.max_token_num = max_token_num
 
     def __getitem__(self, index):
         path = self.textfiles[index]
         if self.train:
-            return read_seg_file(Path(path), self.word2vec, ignore_list=True, remove_special_tokens=True, high_granularity=self.high_granularity)
+            return read_seg_file(Path(path), self.word2vec, ignore_list=True, remove_special_tokens=True, high_granularity=self.high_granularity, max_token_num=self.max_token_num)
         else:
-            return read_seg_test_file(Path(path), self.word2vec, ignore_list=True, remove_special_tokens=True, high_granularity=self.high_granularity)
+            return read_seg_test_file(Path(path), self.word2vec, ignore_list=True, remove_special_tokens=True, high_granularity=self.high_granularity, max_token_num=self.max_token_num)
 
     def __len__(self):
         return len(self.textfiles)

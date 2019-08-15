@@ -271,7 +271,7 @@ if __name__ == '__main__':
     parser.add_argument('--cuda', help='Use cuda?', action='store_true')
     parser.add_argument('--test', help='Test mode? (e.g fake word2vec)', action='store_true')
     parser.add_argument('--bs', help='Batch size', type=int, default=16)
-    parser.add_argument('--test_bs', help='Batch size', type=int, default=5)
+    parser.add_argument('--test_bs', help='Batch size', type=int, default=16)
     parser.add_argument('--mark', help='Mark index', type=int, default=91)
     parser.add_argument('--epochs', help='Number of epochs to run', type=int, default=8)
     parser.add_argument('--model', help='Model to run - will import and run')

@@ -17,7 +17,7 @@ profilerLogger = setup_logger("profilerLogger", 'profiler.log', True)
 
 def get_non_pad_mask(seq, lengths):
     #assert seq.dim() == 2
-    batch, len_q, seq_k.size(0), seq_k.size(1)
+    batch, len_q = seq_k.size(0), seq_k.size(1)
     assert len(lengths) == batch
     return torch.tensor([[1 if i<clen else 0 for i in range(len_q) ] for clen in lengths]).type(torch.float).unsqueeze(-1)
 
@@ -139,7 +139,7 @@ class SentenceEncoding(nn.Module):
         max_length += 1
         enc_inputs = self.add_cls_mark(enc_inputs)
         position = maybe_cuda(torch.tensor([[i if i<=clen else 0 for i in range(max_length) ] for clen in lengths]) )
-        #print ("--------->", type(enc_inputs), enc_inputs.size(), type(position), position.size())
+        print ("--------->", type(enc_inputs), enc_inputs.size(), type(position), position.size())
         enc_outputs = self.src_emb(enc_inputs) + self.position_enc(position)
         #print ("--------->", type(enc_position), enc_position.size(), type(enc_outputs), enc_outputs.size())
         enc_self_attn_mask = get_attn_key_pad_mask(enc_inputs, enc_inputs, lengths)
