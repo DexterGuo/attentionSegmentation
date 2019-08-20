@@ -73,9 +73,9 @@ def main(args):
     for dataset_path in dataset_folders:
 
         if (args.seg_folder):
-            dataset = SegTextDataSet(dataset_path, word2vec, train=False, folder=True, high_granularity=False)
+            dataset = SegTextDataSet(dataset_path, word2vec, train=False, folder=True, high_granularity=False, max_token_num=args.max_token_num)
         else :
-            dataset = SegTextDataSet(dataset_path, word2vec, train=False, high_granularity=False)
+            dataset = SegTextDataSet(dataset_path, word2vec, train=False, high_granularity=False, max_token_num=args.max_token_num)
 
         dl = DataLoader(dataset, batch_size=args.bs, collate_fn=collate_fn, shuffle=False)
 
@@ -148,6 +148,7 @@ if __name__ == '__main__':
     parser.add_argument('--test', help='Test mode? (e.g fake word2vec)', action='store_true')
     parser.add_argument('--bs', help='Batch size', type=int, default=1)
     parser.add_argument('--mark', help='Mark index', type=int, default=1)
+    parser.add_argument('--max_token_num', help='Max sentense token num', type=int, default=0)
     parser.add_argument('--model', help='Model to run - will import and run', required=True)
     parser.add_argument('--stop_after', help='Number of batches to stop after', default=None, type=int)
     parser.add_argument('--config', help='Path to config.json', default='./conf/config.json')

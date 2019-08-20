@@ -19,7 +19,7 @@ from choiloader import collate_fn
 from data_loader import SegTextDataSet
 import accuracy
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 logger = utils.setup_logger(__name__, './logs/test_accuracy.log')
 
